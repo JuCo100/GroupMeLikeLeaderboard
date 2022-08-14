@@ -1,0 +1,110 @@
+import requests
+from requests.auth import HTTPBasicAuth
+import json
+import array as arr
+import pprint
+from urllib.parse import parse_qs, urlencode,  urlsplit
+from easygui import *
+import sys
+
+
+
+msg = "Enter configuration keys"
+title = "GroupMe Leaderboard Configuration"
+fieldNames = ["GroupMe Group ID", "Access Token", "Minimum Likes"]
+fieldValues = multenterbox(msg, title, fieldNames)
+if fieldValues is None:
+    sys.exit(0)
+# make sure that none of the fields were left blank
+while 1:
+    errmsg = ""
+    for i, name in enumerate(fieldNames):
+        if fieldValues[i].strip() == "":
+          errmsg += "*{} is a required field.\n\n".format(name)
+    if errmsg == "":
+        break # no problems found
+    fieldValues = multenterbox(errmsg, title, fieldNames, fieldValues)
+    if fieldValues is None:
+        break
+
+
+
+my_id = fieldValues[0]
+my_key = fieldValues[1]
+min_likes = (int(fieldValues[2]))
+
+pprint.pprint("LIKE LEADERBOARD TEST (Year Recap)")
+final = []
+
+
+
+
+def on_click():
+	
+	hasMoreMessages = True
+
+	url1 = "https://api.groupme.com/v3/groups/"
+	url1 += my_id
+	url1 += "/messages?limit=100&token="
+	url1 += my_key
+
+	while (hasMoreMessages==True):
+
+
+		try: 
+			response_API = requests.get(url1)
+			json = response_API.json()
+			json = sorted(json['response']['messages'], key = lambda i: i['id'], reverse = True)
+
+
+			last_id = json[len(json)-1]['id']
+
+			url1 = "https://api.groupme.com/v3/groups/"
+			url1+= my_id
+			url1 += "/messages?limit=100&before_id="
+			url1 += last_id
+			url1 += "&token="
+			url1 += my_key
+			
+			for item in json:
+				answer = ""
+				if (len(item['favorited_by']) >= min_likes):
+					i = len(item['favorited_by'])
+					
+					answer = (item['name'])
+					answer+= "'s "
+
+					answer += "MESSAGE:  "
+					answer +=  str((item['text']))
+					answer += ('   ')
+			
+					answer += str(len(item['favorited_by']))
+					answer += (" LIKES")
+
+					dict = { "name": item['name'], "message": item['text'], "likes": len(item['favorited_by'])}
+
+					final.append(dict)
+
+
+		
+
+			
+
+				
+		except OSError as e:
+			print(e)
+			hasMoreMessages = False
+
+
+	json = sorted(final, key = lambda i: (i['likes']), reverse = True)
+	
+	for item in json[:]:
+		if item['message']:
+			pass
+		else:
+			json.remove(item)
+
+	for item in json:
+		print(f"{item['name']}: {item['message']}        {item['likes']} LIKES\n")
+
+on_click()
