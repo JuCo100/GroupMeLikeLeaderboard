@@ -1,5 +1,5 @@
 # GroupMeLikeLeaderboard
-Takes a group thread in GroupMe and uses API calls to create a list of the most liked messages
+Takes a thread in GroupMe and uses API calls to create a list of the most liked messages
 
 User enters their API (X-Access) Token, their group ID, and the minimum number of likes required to be displayed on leaderboard into the GUI
 
